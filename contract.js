@@ -424,26 +424,21 @@ var contract = (function(module) {
 
       var contract = new this(address);
 
-      // Add thennable to allow people opt into new recommended usage.
-      contract.then = function(fn) {
-        return self.detectNetwork().then(function(network_id) {
+      return new Promise((accept, reject) => {
+        self.detectNetwork().then(function(network_id) {
           var instance = new self(address);
 
-          return new Promise(function(accept, reject) {
-            self.web3.eth.getCode(address, function(err, code) {
-              if (err) return reject(err);
+          self.web3.eth.getCode(address, function(err, code) {
+            if (err) return reject(err);
 
-              if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
-                return reject(new Error("Cannot create instance of " + self.contractName + "; no code at address " + address));
-              }
+            if (!code || code.replace("0x", "").replace(/0/g, "") === '') {
+              return reject(new Error("Cannot create instance of " + self.contractName + "; no code at address " + address));
+            }
 
-              accept(instance);
-            });
+            accept(instance);
           });
-        }).then(fn);
-      };
-
-      return contract;
+        }
+      )})
     },
 
     deployed: function() {
